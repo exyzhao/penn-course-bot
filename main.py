@@ -15,18 +15,18 @@ def get_course_status():
 
     try:
         output = get_all_course_status("2021A", course)
-        current_time = datetime.now().strftime("%H:%M:%S")
-
-        if output[0]['status'] == 'O':
-            notif: str = f"{current_time}: {course} is open!"
-            print(notif)
-            print(post_groupme_message(notif))
-            # send_twilio_sms(target_num, notif) # disable for now?
-        else:
-            print(f"{current_time}: {course} is closed!")
-        return 0
     except RuntimeError:
         raise SystemExit("Course Fetch had an error")
+
+    current_time = datetime.now().strftime("%H:%M:%S")
+    if output[0]['status'] == 'O':
+        notif: str = f"{current_time}: {course} is open!"
+        print(notif)
+        print(post_groupme_message(notif))
+        # send_twilio_sms(target_num, notif) # disable for now?
+    else:
+        print(f"{current_time}: {course} is closed!")
+    return 0
 
 
 def post_groupme_message(msg: str):
@@ -64,9 +64,11 @@ def send_twilio_sms(phone_num: str, msg: str):
 
 
 if __name__ == '__main__':
+    # write a dict from courses to list of #s?, then hit the all courses end point
+    alerts = {"CIS 121001": ["4699316958"]}
     course = "CIS 121001"
     group_id = "64423915"
-    target_num = "4699316958" # sms destination
+    target_num = "4699316958"  # sms destination
     interval = 10.0  # Request interval, in seconds (should have 6000/hr)
     GROUPME_URL = f"https://api.groupme.com/v3/groups/{group_id}/messages?token={Secrets.GM_TOKEN}"
     get_course_status()
