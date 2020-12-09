@@ -1,0 +1,1 @@
+[{'course_section': 'CIS 121001', 'previous_status': '', 'section_id_normalized': 'CIS -121-001', 'status': 'O', 'status_code_normalized': 'Open', 'term': '2021A'}]
