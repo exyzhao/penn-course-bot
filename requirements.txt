@@ -1,1 +1,2 @@
-twilio
+twilio~=6.50.0
+requests~=2.24.0
