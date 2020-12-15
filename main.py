@@ -1,6 +1,9 @@
-# Main script to check for courses repeatedly, and interact with
-# Groupme API. Made by Brandon Wang, 2020.
-# TODO: https://cloud.google.com/appengine/docs/standard/python3/quickstart?authuser=1
+"""
+Main script to check for courses repeatedly, and interact with
+Groupme API. Made by Brandon Wang, 2020.
+TODO: https://cloud.google.com/appengine/docs/standard/python3/quickstart?authuser=1
+"""
+
 from registrar import get_all_course_status
 import threading
 from datetime import datetime
@@ -11,13 +14,17 @@ from secrets import Secrets
 from twilio.rest import Client
 
 
-# https://esb.isc-seo.upenn.edu/8091/documentation/#coursestatusservice
 def get_course_status():
+    """
+    Grabs data from OpenData, and sends Twilio/Groupme alert messages.
+    https://esb.isc-seo.upenn.edu/8091/documentation/#coursestatusservice
+    :return: 0 if succeeded successfully
+    """
     threading.Timer(interval, get_course_status).start()
     current_time = datetime.now().strftime("%H:%M:%S")
 
     try:
-        output = get_all_course_status("2021A", "all")  # hit all endpoints
+        output = get_all_course_status("2021A", "EAS 203001")  # hit all endpoints
         print(f"{current_time}: courses loaded, length {len(output)}")
     except RuntimeError:
         raise SystemExit("Course Fetch had an error")
@@ -47,6 +54,12 @@ def get_course_status():
 
 
 def post_groupme_message(group_id: str, msg: str):
+    """
+    Uses GroupMe API to send a message to a group via POST request.
+    :param group_id: group id (share link)
+    :param msg: any message string
+    :return: server response
+    """
     groupme_url = f"https://api.groupme.com/v3/groups/{group_id}/messages?token={Secrets.GM_TOKEN}"
     data = {
         "message": {
@@ -65,8 +78,14 @@ def post_groupme_message(group_id: str, msg: str):
 
 
 def send_twilio_sms(phone_num: str, msg: str):
+    """
+    Sends Twilio message
+    :param phone_num: user phone number
+    :param msg: message string
+    :return: confirmation that message was sent.
+    """
     # if it's been less than 60 secs since last text to that #, do nothing
-    if time.time() - last_sms[phone_num] < 60:
+    if time.time() - last_sms[phone_num] < 90:
         return None
     else:
         message = client.messages.create(
@@ -79,30 +98,14 @@ def send_twilio_sms(phone_num: str, msg: str):
 
 
 if __name__ == '__main__':
-    # Your Account Sid and Auth Token from twilio.com/console
-    account_sid = Secrets.TWILIO_ACCOUNT_SID
-    auth_token = Secrets.TWILIO_AUTH_TOKEN
-    client = Client(account_sid, auth_token)
+    # Launch Twilio Client
+    client = Client(Secrets.TWILIO_ACCOUNT_SID, Secrets.TWILIO_AUTH_TOKEN)
 
     # Maps course id to phone num
     sms_alerts = {"EAS 203001": ["4699316958"],
-                  "BEPP250001": ["4699316958"],
-                  "BEPP250002": ["4699316958"],
-                  "BEPP250003": ["4699316958"],
-                  "BEPP250005": ["4699316958"],
-                  "BEPP250006": ["4699316958"],
-                  "BEPP250007": ["4699316958"],
-                  "BEPP250008": ["4699316958"],
                   }
     # Maps course id to GroupMe group num
     groupme_alerts = {"EAS 203001": ["64423915"],
-                      "BEPP250001": ["64423915"],
-                      "BEPP250002": ["64423915"],
-                      "BEPP250003": ["64423915"],
-                      "BEPP250005": ["64423915"],
-                      "BEPP250006": ["64423915"],
-                      "BEPP250007": ["64423915"],
-                      "BEPP250008": ["64423915"],
                       }
     interval = 15.0  # Request interval, in seconds (should have 6000/hr cap)
     # Track when we last sent a sms, for cooldown purposes

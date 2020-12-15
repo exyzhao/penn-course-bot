@@ -7,7 +7,6 @@ from secrets import Secrets
 
 logger = logging.getLogger(__name__)
 
-# private credentials, do not commit!
 API_URL = "https://esb.isc-seo.upenn.edu/8091/open_data/course_section_search"
 
 
