@@ -2,3 +2,5 @@ secrets.py
 selenium
 chromedriver
 .idea
+chromedriver_win32
+__pycache__

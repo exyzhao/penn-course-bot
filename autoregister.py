@@ -4,8 +4,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 from selenium.webdriver.support.ui import Select
-from secrets import Secrets
-
+import secrets
 
 def find_register_function(html_content):
     """
@@ -29,7 +28,7 @@ def init_driver():
     chrome_options.add_argument("user-data-dir=selenium")
     chrome_options.add_argument('no-sandbox')
     driver = webdriver.Chrome(
-        executable_path=Secrets.DRIVER_PATH,
+        executable_path=secrets.DRIVER_PATH,
         options=chrome_options)
     return driver
 
@@ -48,11 +47,11 @@ def intouch_signup(driver, subject, course, section):
     if "Log In" in driver.title:
         elem = driver.find_element_by_name("j_username")
         elem.clear()
-        elem.send_keys(Secrets.PENNKEY)
+        elem.send_keys(secrets.PENNKEY)
 
         elem = driver.find_element_by_name("j_password")
         elem.clear()
-        elem.send_keys(Secrets.PENNKEY_PASS)
+        elem.send_keys(secrets.PENNKEY_PASS)
         elem.send_keys(Keys.RETURN)
 
     # Navigate to the registration page
@@ -80,4 +79,4 @@ def intouch_signup(driver, subject, course, section):
 
 if __name__ == '__main__':
     chrome_driver = init_driver()
-    intouch_signup(chrome_driver, "CIS", "120", "001")
+    intouch_signup(chrome_driver, "MGMT", "230", "003")

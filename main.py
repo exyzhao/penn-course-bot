@@ -10,8 +10,9 @@ from datetime import datetime
 import time
 import requests
 import json
-from secrets import Secrets
+import secrets
 from twilio.rest import Client
+import autoregister
 
 
 def get_course_status():
@@ -24,7 +25,10 @@ def get_course_status():
     current_time = datetime.now().strftime("%H:%M:%S")
 
     try:
-        output = get_all_course_status("2021A", "EAS 203001")  # hit all endpoints
+        output = []
+        for course in sms_alerts.keys():
+            output.append(get_all_course_status("2021A", course))  # hit all endpoints
+        output = [item for sublist in output for item in sublist]
         print(f"{current_time}: courses loaded, length {len(output)}")
     except RuntimeError:
         raise SystemExit("Course Fetch had an error")
@@ -39,6 +43,14 @@ def get_course_status():
                 print(notif)
                 for p in sms_alerts[entry_name]:  # send alert to all phone nums
                     print(send_twilio_sms(p, notif))
+                
+                
+                # sign up for classes kek
+                course_section = entry_name[-3:]
+                course_number = entry_name[-6:-3]
+                course_subject = entry_name[:-6].strip()
+                chrome_driver = autoregister.init_driver()
+                autoregister.intouch_signup(chrome_driver, course_subject, course_number, course_section)
             # else:
             #     print(f"{current_time}: {entry_name} is closed!")
         # GroupMe messages
@@ -60,7 +72,7 @@ def post_groupme_message(group_id: str, msg: str):
     :param msg: any message string
     :return: server response
     """
-    groupme_url = f"https://api.groupme.com/v3/groups/{group_id}/messages?token={Secrets.GM_TOKEN}"
+    groupme_url = f"https://api.groupme.com/v3/groups/{group_id}/messages?token={secrets.gm_token}"
     data = {
         "message": {
             "source_guid": str(round(time.time() * 1000)),
@@ -84,13 +96,13 @@ def send_twilio_sms(phone_num: str, msg: str):
     :param msg: message string
     :return: confirmation that message was sent.
     """
-    # if it's been less than 60 secs since last text to that #, do nothing
+    # if it's been less than 90 secs since last text to that #, do nothing
     if time.time() - last_sms[phone_num] < 90:
         return None
     else:
         message = client.messages.create(
             body=msg,
-            from_='4154032721',  # hardcoded for now
+            from_='4155286397',  # hardcoded for now
             to=phone_num
         )
         last_sms[phone_num] = time.time()
@@ -99,13 +111,31 @@ def send_twilio_sms(phone_num: str, msg: str):
 
 if __name__ == '__main__':
     # Launch Twilio Client
-    client = Client(Secrets.TWILIO_ACCOUNT_SID, Secrets.TWILIO_AUTH_TOKEN)
+    client = Client(secrets.TWILIO_ACCOUNT_SID, secrets.TWILIO_AUTH_TOKEN)
 
     # Maps course id to phone num
-    sms_alerts = {"EAS 203001": ["4699316958"],
-                  }
+    """
+    sms_alerts = {"BEPP250001": ["2482382012"],
+                      "BEPP250002": ["2482382012"],
+                      "ESE 301201": ["2482382012"],
+                      "BEPP250003": ["2482382012"],
+                      "EAS 203001": ["2482382012"],
+                      "BEPP250006": ["2482382012"],
+                      }
     # Maps course id to GroupMe group num
-    groupme_alerts = {"EAS 203001": ["64423915"],
+    groupme_alerts = {"BEPP250001": ["64456983"],
+                      "BEPP250002": ["64456983"],
+                      "ESE 301201": ["64456983"],
+                      "BEPP250003": ["64456983"],
+                      "EAS 203001": ["64456983"],
+                      "BEPP250006": ["64456983"],
+                      }
+                      """
+    sms_alerts = {"MGMT230003": ["2482382012"],
+                    "MGMT265001": ["2482382012"]
+                      }
+    groupme_alerts = {"MGMT230003": ["64456983"],
+                     "MGMT265001": ["64456983"]
                       }
     interval = 15.0  # Request interval, in seconds (should have 6000/hr cap)
     # Track when we last sent a sms, for cooldown purposes
