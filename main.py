@@ -5,12 +5,13 @@ TODO: https://cloud.google.com/appengine/docs/standard/python3/quickstart?authus
 """
 
 from registrar import get_all_course_status
+from secrets import Secrets
+from autoregister import init_driver
 import threading
 from datetime import datetime
 import time
 import requests
 import json
-from secrets import Secrets
 from twilio.rest import Client
 
 
@@ -100,6 +101,9 @@ def send_twilio_sms(phone_num: str, msg: str):
 if __name__ == '__main__':
     # Launch Twilio Client
     client = Client(Secrets.TWILIO_ACCOUNT_SID, Secrets.TWILIO_AUTH_TOKEN)
+    # Launch Web Driver
+    chrome_driver = init_driver()
+    auto_signup = False  # Flag to control automatic signups
 
     # Maps course id to phone num
     sms_alerts = {"EAS 203001": ["4699316958"],

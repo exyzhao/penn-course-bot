@@ -29,7 +29,7 @@ def init_driver():
     chrome_options.add_argument("user-data-dir=selenium")
     chrome_options.add_argument('no-sandbox')
     driver = webdriver.Chrome(
-        executable_path=Secrets.DRIVER_PATH,
+        executable_path="./chromedriver",
         options=chrome_options)
     return driver
 
@@ -80,4 +80,4 @@ def intouch_signup(driver, subject, course, section):
 
 if __name__ == '__main__':
     chrome_driver = init_driver()
-    intouch_signup(chrome_driver, "CIS", "120", "001")
+    intouch_signup(chrome_driver, "EAS", "203", "001")
