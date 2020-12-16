@@ -36,6 +36,12 @@ def get_course_status():
     current_time = datetime.now().strftime("%H:%M:%S")
     for entry in output:
         entry_name: str = entry['course_section']
+        """
+        # get classes kek
+        if entry_name in sms_alerts.keys():
+            if entry['status'] == 'O': # if course is open
+                signup(entry_name) # get class
+        """
         # Twilio SMS messages
         if entry_name in sms_alerts.keys():
             if entry['status'] == 'O':  # if course is open
@@ -43,16 +49,9 @@ def get_course_status():
                 print(notif)
                 for p in sms_alerts[entry_name]:  # send alert to all phone nums
                     print(send_twilio_sms(p, notif))
-                
-                
-                # sign up for classes kek
-                course_section = entry_name[-3:]
-                course_number = entry_name[-6:-3]
-                course_subject = entry_name[:-6].strip()
-                chrome_driver = autoregister.init_driver()
-                autoregister.intouch_signup(chrome_driver, course_subject, course_number, course_section)
             # else:
             #     print(f"{current_time}: {entry_name} is closed!")
+        
         # GroupMe messages
         if entry_name in groupme_alerts.keys():
             if entry['status'] == 'O':
@@ -62,6 +61,7 @@ def get_course_status():
                     print(post_groupme_message(p, notif))
             # else:
             #     print(f"{current_time}: {entry_name} is closed!")
+        
     return 0
 
 
@@ -108,6 +108,25 @@ def send_twilio_sms(phone_num: str, msg: str):
         last_sms[phone_num] = time.time()
         return message.sid
 
+def signup(entry_name: str):
+    """
+    Signs up for course
+    :param entry_name: unparsed course name
+    :return: 0 if works, 1 if not
+    """
+
+    # if it's been less than 90 secs since last register for that course, do nothing
+
+    course_section = entry_name[-3:]
+    course_number = entry_name[-6:-3]
+    course_subject = entry_name[:-6].strip()
+    chrome_driver = autoregister.init_driver()
+    if autoregister.intouch_signup(chrome_driver, course_subject, course_number, course_section) == 0:
+        return 0
+    return 1
+
+
+
 
 if __name__ == '__main__':
     # Launch Twilio Client
@@ -131,13 +150,14 @@ if __name__ == '__main__':
                       "BEPP250006": ["64456983"],
                       }
                       """
-    sms_alerts = {"MGMT230003": ["2482382012"],
-                    "MGMT265001": ["2482382012"]
+    sms_alerts = {"MGMT230003": ["2482382012"]
                       }
-    groupme_alerts = {"MGMT230003": ["64456983"],
-                     "MGMT265001": ["64456983"]
+    groupme_alerts = {"MGMT230003": ["64456983"]
                       }
     interval = 15.0  # Request interval, in seconds (should have 6000/hr cap)
     # Track when we last sent a sms, for cooldown purposes
     last_sms = {phone: time.time() for phone in sum(sms_alerts.values(), [])}
+    last_course = {course: time.time() for course in sms_alerts.keys()}
+    print("a")
+    print(last_course)
     get_course_status()
