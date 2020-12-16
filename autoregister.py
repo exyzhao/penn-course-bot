@@ -83,6 +83,7 @@ def intouch_signup(driver, subject, course, section):
         if check_enrolled(driver.page_source, subject, course, section):
             # driver.close()
             print(f"Already in {subject} {course} {section}")
+            driver.close()
             return 0
         subject_select = Select(driver.find_element_by_name("subjectPrimary"))
         subject_select.select_by_value(subject)
@@ -104,4 +105,4 @@ def intouch_signup(driver, subject, course, section):
 
 if __name__ == '__main__':
     chrome_driver = init_driver()
-    intouch_signup(chrome_driver, "MGMT", "230", "003")
+    intouch_signup(chrome_driver, ("MGMT", "230", "003"))
