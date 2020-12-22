@@ -47,7 +47,7 @@ def init_driver():
     chrome_options.add_argument("user-data-dir=selenium")
     chrome_options.add_argument('no-sandbox')
     driver = webdriver.Chrome(
-        executable_path=secrets.DRIVER_PATH,
+        executable_path="./chromedriver",
         options=chrome_options)
     return driver
 
