@@ -1,11 +1,9 @@
 """
 Main script to check for courses repeatedly, and interact with
-Groupme API. Made by Brandon Wang, 2020.
-TODO: https://cloud.google.com/appengine/docs/standard/python3/quickstart?authuser=1
+Groupme API.
 """
 
 from registrar import get_all_course_status
-from secrets import Secrets
 from autoregister import init_driver
 import threading
 from datetime import datetime
@@ -128,7 +126,7 @@ def signup(entry_name: str):
 
 if __name__ == '__main__':
     # Launch Twilio Client
-    client = Client(Secrets.TWILIO_ACCOUNT_SID, Secrets.TWILIO_AUTH_TOKEN)
+    client = Client(secrets.TWILIO_ACCOUNT_SID, secrets.TWILIO_AUTH_TOKEN)
     # Launch Web Driver
     chrome_driver = init_driver()
     auto_signup = False  # Flag to control automatic signups
