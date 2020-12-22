@@ -4,7 +4,6 @@ Groupme API.
 """
 
 from registrar import get_all_course_status
-from autoregister import init_driver
 import threading
 from datetime import datetime
 import time
@@ -72,7 +71,7 @@ def post_groupme_message(group_id: str, msg: str):
     :param msg: any message string
     :return: server response
     """
-    groupme_url = f"https://api.groupme.com/v3/groups/{group_id}/messages?token={secrets.gm_token}"
+    groupme_url = f"https://api.groupme.com/v3/groups/{group_id}/messages?token={secrets.GM_TOKEN}"
     data = {
         "message": {
             "source_guid": str(round(time.time() * 1000)),
@@ -102,7 +101,7 @@ def send_twilio_sms(phone_num: str, msg: str):
     else:
         message = client.messages.create(
             body=msg,
-            from_='4155286397',  # hardcoded for now
+            from_=secrets.TWILIO_PHONE,  # hardcoded for now
             to=phone_num
         )
         last_sms[phone_num] = time.time()
@@ -112,27 +111,27 @@ def send_twilio_sms(phone_num: str, msg: str):
 def signup(entry_name: str):
     """
     Signs up for course
-    :param entry_name: unparsed course name
-    :return: 0 if works, 1 if not
+    :param entry_name: unparsed course name to register. Should be in the form DEPT######.
+    :return: 0 if successful, 1 otherwise
     """
+    # Returns if the entry name is invalid
+    if not len(entry_name) == 10:
+        return 1
     course_section = entry_name[-3:]
     course_number = entry_name[-6:-3]
     course_subject = entry_name[:-6].strip()
+    # Launch the web driver
     chrome_driver = autoregister.init_driver()
-    if autoregister.intouch_signup(chrome_driver, course_subject, course_number, course_section) == 0:
-        return 0
-    return 1
+    # Try to register for the course
+    return 0 if autoregister.intouch_signup(chrome_driver, course_subject, course_number, course_section) == 0 else 1
 
 
 if __name__ == '__main__':
     # Launch Twilio Client
     client = Client(secrets.TWILIO_ACCOUNT_SID, secrets.TWILIO_AUTH_TOKEN)
-    # Launch Web Driver
-    chrome_driver = init_driver()
     auto_signup = False  # Flag to control automatic signups
 
     # Maps course id to phone num
-
     sms_alerts = {"BEPP250001": ["2482382012"],
                   "BEPP250002": ["2482382012"],
                   "ESE 301201": ["2482382012"],
@@ -149,8 +148,7 @@ if __name__ == '__main__':
                       "BEPP250006": ["64456983"],
                       }
 
-    interval = 15.0  # Request interval, in seconds (should have 6000/hr cap)
+    interval = 15.0  # Request interval, in seconds (current limit is 6000/hr)
     # Track when we last sent a sms, for cooldown purposes
     last_sms = {phone: time.time() for phone in sum(sms_alerts.values(), [])}
-    last_course = {course: time.time() for course in sms_alerts.keys()}
     get_course_status()

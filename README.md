@@ -29,8 +29,10 @@ API_SECRET = "abcasdhsakjdhasjd23123hkjas"
 # GroupMe API Key (for sending GroupMe messages, get it from https://dev.groupme.com/)
 GM_TOKEN = "abcasdhsakjdhasjd23123hkjas"
 # Twilio auth (for sending SMS, get from twilio.com/console)
+# You will need to buy and configure a Twilio phone number to send SMS
 TWILIO_ACCOUNT_SID = "abcasdhsakjdhasjd23123hkjas"
 TWILIO_AUTH_TOKEN = "abcasdhsakjdhasjd23123hkjas"
+TWILIO_PHONE = "1234567890"
 # Your PennKey (for automatic course registration)
 PENNKEY = "mypennkey"
 PENNKEY_PASS = "mypennkeypass"
