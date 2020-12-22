@@ -4,3 +4,4 @@ chromedriver
 .idea
 chromedriver_win32
 __pycache__
+debug.log
