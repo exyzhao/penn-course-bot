@@ -3,7 +3,7 @@
 import json
 import logging
 import requests
-from secrets import Secrets
+import secrets
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +14,8 @@ def get_headers():
     """This will have a rotation of API keys eventually"""
     return {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization-Bearer": Secrets.API_KEY,
-        "Authorization-Token": Secrets.API_SECRET
+        "Authorization-Bearer": secrets.bearer,
+        "Authorization-Token": secrets.token
     }
 
 
