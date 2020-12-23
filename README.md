@@ -43,6 +43,8 @@ Finally, to start the bot, run
 ```
 python main.py
 ```
+If you have two step verification enabled, you will need to first login to PiT
+ using Selenium once on the browser, and select "Trust Browser".
 
 ## Misc 
 This tool was inspired by:

@@ -29,8 +29,9 @@ class PITBot:
         self.last_alert = {course: time.time() for course in self.alert_config.keys()}
         if self.enable_sms:
             self.client = Client(secrets.TWILIO_ACCOUNT_SID, secrets.TWILIO_AUTH_TOKEN)  # Launch Twilio Client
-        if self.enable_signup:
-            self.chrome_driver = autoregister.init_driver()  # Launch the web driver
+
+        if len(self.alert_config.keys()) * 3600 / 15 > 5000:
+            print("WARNING: You may be coming close to exceeding the 6000 request/hr limit!")
 
     def start_bot(self):
         """
@@ -60,6 +61,7 @@ class PITBot:
 
             current_time = datetime.now().strftime("%H:%M:%S")
             print(f"{current_time}: courses loaded, length {len(output)}")
+
             return {entry['course_section']: entry['status'] == 'O' for entry in output}
         except RuntimeError:
             raise SystemExit("Course Fetch had an error")
@@ -73,11 +75,11 @@ class PITBot:
         for class_name, class_status in course_status.items():
             if class_name in self.alert_config.keys() and class_status:
                 # if it's been less than 90 secs since we sent the last alert for the class, do nothing
-                if time.time() - self.last_alert[class_name] < 90:
-                    print("DEBUG: too recent, no alert sent")
+                if time.time() - self.last_alert[class_name] < 30:
                     continue
+                else:
+                    self.last_alert[class_name] = time.time()
 
-                self.last_alert[class_name] = time.time()
                 current_time = datetime.now().strftime("%H:%M:%S")
                 notif = f"{current_time}: {class_name} is open!"
                 print(notif)
@@ -95,7 +97,7 @@ class PITBot:
                 if self.enable_groupme:
                     for user in self.alert_config[class_name]:  # send alert to each user
                         print(self.post_groupme_message(user["groupme"], notif) if user["groupme"] is not None else "")
-            return 0
+        return 0
 
     def post_groupme_message(self, group_id: str, msg: str):
         """
@@ -115,10 +117,8 @@ class PITBot:
                           data=json.dumps(data),
                           headers={'Content-Type': 'application/json'})
 
-        if r.status_code == requests.codes.ok:
-            return r.json(), None
-        else:
-            return None, r.text
+        return f"alert sent to {group_id}! + {r.text}"
+
 
     def send_twilio_sms(self, phone_num: str, msg: str):
         """
@@ -132,7 +132,7 @@ class PITBot:
             from_=secrets.TWILIO_PHONE,  # hardcoded for now
             to=phone_num
         )
-        return message.sid
+        return f"SMS sent, SID is {message.sid}"
 
     def signup(self, entry_name: str):
         """
@@ -147,5 +147,6 @@ class PITBot:
         course_number = entry_name[-6:-3]
         course_subject = entry_name[:-6].strip()
         # Try to register for the course
-        return 0 if autoregister.intouch_signup(self.chrome_driver, course_subject, course_number,
+        chrome_driver = autoregister.init_driver()  # Launch the web driver
+        return 0 if autoregister.intouch_signup(chrome_driver, course_subject, course_number,
                                                 course_section) == 0 else 1

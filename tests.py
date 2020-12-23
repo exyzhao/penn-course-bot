@@ -30,13 +30,14 @@ def test_load_courses():
     Test loading courses
     :return: dict as specified in the method docstring.
     """
-    return bot.load_courses(False, ["CIS 160002", "CIS 120203"])
+    return bot.load_courses(semester="2021A",
+                            get_all=False,
+                            course_list=["CIS 160002", "CIS 120203"])
 
 
 if __name__ == '__main__':
-    bot = PITBot({}, {}, True, True, True)
+    bot = PITBot({}, True, True, True)
     # print(test_load_courses())
     # print(test_groupme())
     # print(test_sms())
-    # print(test_load_courses())
     # print(test_signup())

@@ -29,11 +29,15 @@ def check_enrolled(html_content, subject, course, section):
 
     """
     soup = BeautifulSoup(html_content, features="html.parser")
-    if soup.findAll(text=subject + "-" + course + "-" + section):
-        print("Already Enrolled")
+    if len(subject) == 3:
+        course_string = f"{subject} -{course}-{section}"
+    else:
+        course_string = f"{subject}-{course}-{section}"
+    if soup.findAll(text=course_string):
+        print(f"Already Enrolled in {course_string}")
         return True
     else:
-        print("Not Enrolled")
+        print(f"Not Already Enrolled in {course_string}")
         return False
 
 
@@ -81,7 +85,6 @@ def intouch_signup(driver, subject, course, section):
     try:
         driver.implicitly_wait(1)  # wait for classes to populate
         if check_enrolled(driver.page_source, subject, course, section):
-            print(f"Already in {subject} {course} {section}")
             driver.close()
             return 0
         subject_select = Select(driver.find_element_by_name("subjectPrimary"))

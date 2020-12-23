@@ -5,7 +5,7 @@ from PITBot import PITBot
 
 if __name__ == '__main__':
     # Create a user
-    brandon = {"groupme": "464440931",
+    brandon = {"groupme": "64440931",
                "sms": "4699316958",
                }
     # Create a user with no SMS
@@ -14,8 +14,10 @@ if __name__ == '__main__':
              }
 
     # Config mapping courses to users
-    alert_config = {"BEPP250003": [brandon, user2],
+    alert_config = {"BEPP250003": [brandon],
                     "EAS 203001": [brandon],
+                    # "CIS 121002": [brandon],
+                    "CIS 160002": [brandon],
                     }
 
     # Create and launch the bot
