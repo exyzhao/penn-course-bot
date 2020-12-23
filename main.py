@@ -14,9 +14,8 @@ if __name__ == '__main__':
              }
 
     # Config mapping courses to users
-    alert_config = {"BEPP250003": [brandon],
+    alert_config = {"BEPP250003": [brandon, user2],
                     "EAS 203001": [brandon],
-                    # "CIS 121002": [brandon],
                     "CIS 160002": [brandon],
                     }
 

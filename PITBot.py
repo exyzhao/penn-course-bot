@@ -75,7 +75,7 @@ class PITBot:
         for class_name, class_status in course_status.items():
             if class_name in self.alert_config.keys() and class_status:
                 # if it's been less than 90 secs since we sent the last alert for the class, do nothing
-                if time.time() - self.last_alert[class_name] < 30:
+                if time.time() - self.last_alert[class_name] < 90:
                     continue
                 else:
                     self.last_alert[class_name] = time.time()
