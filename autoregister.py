@@ -6,16 +6,17 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.support.ui import Select
 import secrets
 
+
 def find_register_function(html_content):
     """
-    Uses BeautifulSoup to find the 'register' JavaScript function
+    Uses BeautifulSoup to find the 'register' JavaScript function on the main page
     :param html_content: raw html page input
     :return: function to navigate to register page
     """
     soup = BeautifulSoup(html_content, features="html.parser")
     element = soup.body.ul.li.ul.contents[7].a
-    js_function = element['onclick'][7:]
-    return js_function
+    return element['onclick'][7:]
+
 
 def check_enrolled(html_content, subject, course, section):
     """
@@ -28,13 +29,12 @@ def check_enrolled(html_content, subject, course, section):
 
     """
     soup = BeautifulSoup(html_content, features="html.parser")
-    if soup.findAll(text=subject+"-"+course+"-"+section):
+    if soup.findAll(text=subject + "-" + course + "-" + section):
         print("Already Enrolled")
         return True
     else:
         print("Not Enrolled")
-        return False  
-
+        return False
 
 
 def init_driver():
@@ -52,7 +52,6 @@ def init_driver():
     return driver
 
 
-
 def intouch_signup(driver, subject, course, section):
     """
     Main method to register for courses
@@ -64,6 +63,7 @@ def intouch_signup(driver, subject, course, section):
     """
     driver.get("https://pennintouch.apps.upenn.edu/")
 
+    # Logs the user into PIT
     if "Log In" in driver.title:
         elem = driver.find_element_by_name("j_username")
         elem.clear()
@@ -102,7 +102,6 @@ def intouch_signup(driver, subject, course, section):
     return 0
 
 
-
 if __name__ == '__main__':
     chrome_driver = init_driver()
-    intouch_signup(chrome_driver, ("MGMT", "230", "003"))
+    # intouch_signup(chrome_driver, "MGMT", "230", "003")

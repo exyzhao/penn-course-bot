@@ -14,8 +14,8 @@ def get_headers():
     """This will have a rotation of API keys eventually"""
     return {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization-Bearer": secrets.bearer,
-        "Authorization-Token": secrets.token
+        "Authorization-Bearer": secrets.API_KEY,
+        "Authorization-Token": secrets.API_SECRET
     }
 
 
@@ -46,7 +46,6 @@ def get_all_course_status(semester: str, course: str):
     if r.status_code == requests.codes.ok:
         return r.json().get("result_data", [])
     else:
-        report_api_error(r.text)
         raise RuntimeError(
             f"Registrar API request failed with code {r.status_code}. "
             f'Message returned: "{r.text}"'
