@@ -10,24 +10,23 @@ import autoregister
 
 
 class PITBot:
-    def __init__(self, sms_alerts: dict, groupme_alerts: dict, enable_signup=False, enable_sms=False,
+    def __init__(self, alert_config: dict, enable_signup=False, enable_sms=False,
                  enable_groupme=False):
         """
         Main Constructor.
         :param enable_signup: Whether to enable PIT signup automation
         :param enable_sms: Whether to enable SMS
         :param enable_groupme: Whether to enable Groupme
-        :param sms_alerts: Dict of alerts for SMS (course to phone #)
-        :param groupme_alerts: Dict of alerts for Groupme (course to group name)
+        :param alert_config: Dict of alerts (course to user)
         """
         self.interval = 15.0  # Request interval, in seconds (current limit is 6000/hr)
-        self.sms_alerts = sms_alerts
-        self.groupme_alerts = groupme_alerts
+        self.alert_config = alert_config
         self.enable_signup = enable_signup
         self.enable_sms = enable_sms
         self.enable_groupme = enable_groupme
-        self.last_sms = {phone: time.time() for phone in
-                         sum(self.sms_alerts.values(), [])}  # Track when we last sent a sms, for cooldown purposes
+
+        # Track when we last sent an alert for a class, for cooldown purposes
+        self.last_alert = {course: time.time() for course in self.alert_config.keys()}
         if self.enable_sms:
             self.client = Client(secrets.TWILIO_ACCOUNT_SID, secrets.TWILIO_AUTH_TOKEN)  # Launch Twilio Client
         if self.enable_signup:
@@ -35,12 +34,12 @@ class PITBot:
 
     def start_bot(self):
         """
-        Main function that the bot runs, repeated called using the threading Timer.
+        Main function that runs the bot, called repeatedly using the threading Timer.
         """
         threading.Timer(self.interval, self.start_bot).start()  # Run every x seconds based on interval.
         course_status = self.load_courses(semester="2021A",
                                           get_all=False,
-                                          course_list=list(self.sms_alerts.keys()))
+                                          course_list=list(self.alert_config.keys()))
         self.fire_alerts(course_status)
 
     def load_courses(self, semester, get_all=False, course_list=None):
@@ -72,31 +71,31 @@ class PITBot:
         :return: None
         """
         for class_name, class_status in course_status.items():
-            # Auto Signup for class if option is enabled and it's available
-            if self.enable_signup and class_name in self.sms_alerts.keys() and class_status:
-                self.signup(class_name)
+            if class_name in self.alert_config.keys() and class_status:
+                # if it's been less than 90 secs since we sent the last alert for the class, do nothing
+                if time.time() - self.last_alert[class_name] < 90:
+                    print("DEBUG: too recent, no alert sent")
+                    continue
 
-            # Send Twilio SMS messages if enabled and it's available
-            if self.enable_sms and class_name in self.sms_alerts.keys() and class_status:
+                self.last_alert[class_name] = time.time()
                 current_time = datetime.now().strftime("%H:%M:%S")
                 notif = f"{current_time}: {class_name} is open!"
                 print(notif)
-                for phone_num in self.sms_alerts[class_name]:  # send alert to all phone nums
-                    # if it's been less than 90 secs since last text to that #, do nothing
-                    if time.time() - self.last_sms[phone_num] < 90:
-                        return None
-                    else:
-                        print(self.send_twilio_sms(phone_num, notif))
-                        self.last_sms[phone_num] = time.time()
 
-            # Send GroupMe messages if enabled and it's available
-            if self.enable_groupme and class_name in self.groupme_alerts.keys() and class_status:
-                current_time = datetime.now().strftime("%H:%M:%S")
-                notif = f"{current_time}: {class_name} is open!"
-                print(notif)
-                for p in self.groupme_alerts[class_name]:
-                    print(self.post_groupme_message(p, notif))
-        return 0
+                # Auto Signup for class if option is enabled and it's available
+                if self.enable_signup:
+                    self.signup(class_name)
+
+                # Send Twilio SMS messages if enabled and it's available
+                if self.enable_sms:
+                    for user in self.alert_config[class_name]:  # send alert to each user
+                        print(self.send_twilio_sms(user["sms"], notif) if user["sms"] is not None else "")
+
+                # Send GroupMe messages if enabled and it's available
+                if self.enable_groupme:
+                    for user in self.alert_config[class_name]:  # send alert to each user
+                        print(self.post_groupme_message(user["groupme"], notif) if user["groupme"] is not None else "")
+            return 0
 
     def post_groupme_message(self, group_id: str, msg: str):
         """

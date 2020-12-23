@@ -81,7 +81,6 @@ def intouch_signup(driver, subject, course, section):
     try:
         driver.implicitly_wait(1)  # wait for classes to populate
         if check_enrolled(driver.page_source, subject, course, section):
-            # driver.close()
             print(f"Already in {subject} {course} {section}")
             driver.close()
             return 0

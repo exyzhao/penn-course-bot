@@ -37,6 +37,8 @@ TWILIO_PHONE = "1234567890"
 PENNKEY = "mypennkey"
 PENNKEY_PASS = "mypennkeypass"
 ```
+Next, you will need to configure the course settings in main.py to set which classes to be alerted for.
+
 Finally, to start the bot, run 
 ```
 python main.py
