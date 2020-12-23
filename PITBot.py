@@ -30,7 +30,7 @@ class PITBot:
         if self.enable_sms:
             self.client = Client(secrets.TWILIO_ACCOUNT_SID, secrets.TWILIO_AUTH_TOKEN)  # Launch Twilio Client
 
-        if len(self.alert_config.keys()) * 3600 / 15 > 5000:
+        if len(self.alert_config.keys()) * 3600 / self.interval > 5000:
             print("WARNING: You may be coming close to exceeding the 6000 request/hr limit!")
 
     def start_bot(self):
@@ -129,7 +129,7 @@ class PITBot:
         """
         message = self.client.messages.create(
             body=msg,
-            from_=secrets.TWILIO_PHONE,  # hardcoded for now
+            from_=secrets.TWILIO_PHONE,
             to=phone_num
         )
         return f"SMS sent, SID is {message.sid}"
@@ -147,6 +147,6 @@ class PITBot:
         course_number = entry_name[-6:-3]
         course_subject = entry_name[:-6].strip()
         # Try to register for the course
-        chrome_driver = autoregister.init_driver()  # Launch the web driver
+        chrome_driver = autoregister.init_driver()
         return 0 if autoregister.intouch_signup(chrome_driver, course_subject, course_number,
                                                 course_section) == 0 else 1
