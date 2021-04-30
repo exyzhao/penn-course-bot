@@ -38,7 +38,7 @@ class PITBot:
         Main function that runs the bot, called repeatedly using the threading Timer.
         """
         threading.Timer(self.interval, self.start_bot).start()  # Run every x seconds based on interval.
-        course_status = self.load_courses(semester="2021A",
+        course_status = self.load_courses(semester="2021C",
                                           get_all=False,
                                           course_list=list(self.alert_config.keys()))
         self.fire_alerts(course_status)

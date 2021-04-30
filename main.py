@@ -12,14 +12,15 @@ if __name__ == '__main__':
              "sms": None}
 
     # Config mapping courses to a list of users
-    alert_config = {"BEPP250003": [brandon, user2],
-                    "EAS 203001": [brandon],
-                    "CIS 160002": [brandon],
+    alert_config = {
+        # "BEPP250003": [brandon, user2],
+        # "EAS 203001": [brandon],
+        "CIS 240001": [brandon],
                     }
 
     # Create and launch the bot
     bot = PITBot(alert_config,
-                 enable_signup=True,
+                 enable_signup=False,
                  enable_sms=False,
-                 enable_groupme=False)
+                 enable_groupme=True)
     bot.start_bot()
