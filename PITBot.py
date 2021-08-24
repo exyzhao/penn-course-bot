@@ -19,7 +19,7 @@ class PITBot:
         :param enable_groupme: Whether to enable Groupme
         :param alert_config: Dict of alerts (course to user)
         """
-        self.interval = 15.0  # Request interval, in seconds (current limit is 6000/hr)
+        self.interval = 12.0  # Request interval, in seconds (current limit is 6000/hr)
         self.alert_config = alert_config
         self.enable_signup = enable_signup
         self.enable_sms = enable_sms

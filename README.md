@@ -12,6 +12,10 @@ Additionally, it can also automatically try to register for the course on PennIn
 Optionally, first create a python virtual env.
 Then run
 ```
+poetry install
+```
+or
+```
 pip install -r requirements.txt
 ```
 Next, download a browser driver for Selenium. So far, only the Chrome driver is supported and tested. 
