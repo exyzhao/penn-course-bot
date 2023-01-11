@@ -1,4 +1,4 @@
-from registrar import get_all_course_status
+from registrar import get_all_course_status, get_course_status
 import threading
 from datetime import datetime
 import time
@@ -38,7 +38,7 @@ class PITBot:
         Main function that runs the bot, called repeatedly using the threading Timer.
         """
         threading.Timer(self.interval, self.start_bot).start()  # Run every x seconds based on interval.
-        course_status = self.load_courses(semester="2021C",
+        course_status = self.load_courses(semester="202310",
                                           get_all=False,
                                           course_list=list(self.alert_config.keys()))
         self.fire_alerts(course_status)
@@ -54,15 +54,15 @@ class PITBot:
 
         try:
             if get_all:
-                output = get_all_course_status(semester, "all")
+                output = get_all_course_status(semester)
             else:
-                output = [get_all_course_status(semester, course) for course in course_list]
+                output = [get_course_status(semester, course) for course in course_list]
                 output = [item for sublist in output for item in sublist]  # Flatten list
 
             current_time = datetime.now().strftime("%H:%M:%S")
             print(f"{current_time}: courses loaded, length {len(output)}")
 
-            return {entry['course_section']: entry['status'] == 'O' for entry in output}
+            return {entry['section_id']: entry['status'] == 'O' for entry in output}
         except RuntimeError:
             raise SystemExit("Course Fetch had an error")
 
@@ -137,15 +137,15 @@ class PITBot:
     def signup(self, entry_name: str):
         """
         Signs up for course
-        :param entry_name: unparsed course name to register. Should be in the form DEPT######.
+        :param entry_name: unparsed course name to register. Should be in the form DEPT#######.
         :return: 0 if successful, 1 otherwise
         """
         # Returns if the entry name is invalid
-        if not len(entry_name) == 10:
+        if len(entry_name) != 10 and len(entry_name) != 11:
             return 1
         course_section = entry_name[-3:]
-        course_number = entry_name[-6:-3]
-        course_subject = entry_name[:-6].strip()
+        course_number = entry_name[-7:-3]
+        course_subject = entry_name[:-7].strip()
         # Try to register for the course
         chrome_driver = autoregister.init_driver()
         return 0 if autoregister.intouch_signup(chrome_driver, course_subject, course_number,

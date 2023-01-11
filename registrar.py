@@ -7,28 +7,37 @@ import secrets
 
 logger = logging.getLogger(__name__)
 
-API_URL = "https://esb.isc-seo.upenn.edu/8091/open_data/course_section_search"
+API_URL = "https://3scale-public-prod-open-data.apps.k8s.upenn.edu/api"
+
+
+def get_token():
+    r = requests.post(
+        secrets.OPEN_DATA_TOKEN_URL,
+        data={"grant_type": "client_credentials"},
+        auth=(secrets.OPEN_DATA_CLIENT_ID, secrets.OPEN_DATA_OIDC_SECRET),
+    )
+    if not r.ok:
+        raise ValueError(f"OpenData token URL responded with status code {r.status_code}: {r.text}")
+    return r.json()["access_token"]
 
 
 def get_headers():
-    """This will have a rotation of API keys eventually"""
     return {
-        "Content-Type": "application/json; charset=utf-8",
-        "Authorization-Bearer": secrets.API_KEY,
-        "Authorization-Token": secrets.API_SECRET
+        "Authorization": "Bearer " + get_token(),
     }
 
 
-def make_api_request(params, headers):
-    if headers is None:
-        headers = get_headers()
-
-    r = requests.get(API_URL, params=params, headers=headers)
-
-    if r.status_code == requests.codes.ok:
-        return r.json(), None
-    else:
-        return None, r.text
+def make_api_request(params):
+    headers = get_headers()
+    url = f"{secrets.OPEN_DATA_API_BASE}/v1/course_section_search"
+    r = requests.get(
+        url,
+        params=params,
+        headers=headers,
+    )
+    if not r.ok:
+        raise ValueError(f"OpenData API request failed with status code {r.status_code}: {r.text}")
+    return r.json()
 
 
 def report_api_error(err):
@@ -39,13 +48,28 @@ def report_api_error(err):
         logger.error("Penn API error", extra={"error_msg": err})
 
 
-def get_all_course_status(semester: str, course: str):
+def get_all_course_status(semester):
     headers = get_headers()
-    url = f"https://esb.isc-seo.upenn.edu/8091/open_data/course_status/{semester}/{course}"
+    url = f"{secrets.OPEN_DATA_API_BASE}/v1/course_section_status/{semester}/all"
     r = requests.get(url, headers=headers)
     if r.status_code == requests.codes.ok:
         return r.json().get("result_data", [])
     else:
+        report_api_error(r.text)
+        raise RuntimeError(
+            f"Registrar API request failed with code {r.status_code}. "
+            f'Message returned: "{r.text}"'
+        )
+
+
+def get_course_status(semester, course):
+    headers = get_headers()
+    url = f"{secrets.OPEN_DATA_API_BASE}/v1/course_section_status/id/{semester}/{course}"
+    r = requests.get(url, headers=headers)
+    if r.status_code == requests.codes.ok:
+        return r.json().get("result_data", [])
+    else:
+        report_api_error(r.text)
         raise RuntimeError(
             f"Registrar API request failed with code {r.status_code}. "
             f'Message returned: "{r.text}"'
@@ -56,7 +80,7 @@ def get_courses(query, semester):
     headers = get_headers()
 
     params = {
-        "course_id": query,
+        "section_id": query,
         "term": semester,
         "page_number": 1,
         "number_of_results_per_page": 200,
@@ -85,7 +109,7 @@ def first(lst):
 
 
 def get_course(query, semester):
-    params = {"course_id": query, "term": semester}
+    params = {"section_id": query, "term": semester}
     headers = get_headers()
     data, err = make_api_request(params, headers)
     if err is None and data is not None:
