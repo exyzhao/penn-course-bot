@@ -19,14 +19,15 @@ class PITBot:
         :param enable_groupme: Whether to enable Groupme
         :param alert_config: Dict of alerts (course to user)
         """
-        self.interval = 12.0  # Request interval, in seconds (current limit is 6000/hr)
+        self.interval = 1.0  # Request interval, in seconds (current limit is 6000/hr)
         self.alert_config = alert_config
         self.enable_signup = enable_signup
         self.enable_sms = enable_sms
         self.enable_groupme = enable_groupme
 
         # Track when we last sent an alert for a class, for cooldown purposes
-        self.last_alert = {course: time.time() for course in self.alert_config.keys()}
+        # Set initial time to 2 mins before bot is run
+        self.last_alert = {course: time.time() - 120 for course in self.alert_config.keys()}
         if self.enable_sms:
             self.client = Client(secrets.TWILIO_ACCOUNT_SID, secrets.TWILIO_AUTH_TOKEN)  # Launch Twilio Client
 

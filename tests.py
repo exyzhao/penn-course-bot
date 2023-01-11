@@ -14,7 +14,7 @@ def test_sms():
     Test the Twilio SMS function
     :return: SID if message was sent correctly
     """
-    return bot.send_twilio_sms("2147992608", "this is a test")
+    return bot.send_twilio_sms("2147992608", "This is a test")
 
 
 # def test_signup():

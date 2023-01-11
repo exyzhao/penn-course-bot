@@ -16,7 +16,6 @@ if __name__ == '__main__':
     alert_config = {
         # "BEPP250003": [brandon, user2],
         # "EAS 203001": [brandon],
-        "ACCT1010001": [ethan],
         "OIDD2360001": [ethan],
                     }
 
