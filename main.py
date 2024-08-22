@@ -16,7 +16,8 @@ if __name__ == '__main__':
     alert_config = {
         # "BEPP250003": [brandon, user2],
         # "EAS 203001": [brandon],
-        "OIDD2360001": [ethan],
+        # "MGMT1110001": [ethan],
+        "MGMT1110001": [ethan],
                     }
 
     # Create and launch the bot

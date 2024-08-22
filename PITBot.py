@@ -39,7 +39,7 @@ class PITBot:
         Main function that runs the bot, called repeatedly using the threading Timer.
         """
         threading.Timer(self.interval, self.start_bot).start()  # Run every x seconds based on interval.
-        course_status = self.load_courses(semester="202310",
+        course_status = self.load_courses(semester="202430",
                                           get_all=False,
                                           course_list=list(self.alert_config.keys()))
         self.fire_alerts(course_status)
@@ -76,28 +76,31 @@ class PITBot:
         for class_name, class_status in course_status.items():
             if class_name in self.alert_config.keys() and class_status:
                 # if it's been less than 90 secs since we sent the last alert for the class, do nothing
-                if time.time() - self.last_alert[class_name] < 90:
-                    continue
+                if time.time() - self.last_alert[class_name] < 120:
+                    current_time = datetime.now().strftime("%H:%M:%S")
+                    notif = f"{current_time}: {class_name} is open!"
+                    print(notif)
+                    # continue
                 else:
                     self.last_alert[class_name] = time.time()
 
-                current_time = datetime.now().strftime("%H:%M:%S")
-                notif = f"{current_time}: {class_name} is open!"
-                print(notif)
+                    current_time = datetime.now().strftime("%H:%M:%S")
+                    notif = f"{current_time}: {class_name} is open!"
+                    print(notif)
 
-                # Auto Signup for class if option is enabled and it's available
-                if self.enable_signup:
-                    self.signup(class_name)
+                    # Auto Signup for class if option is enabled and it's available
+                    if self.enable_signup:
+                        self.signup(class_name)
 
-                # Send Twilio SMS messages if enabled and it's available
-                if self.enable_sms:
-                    for user in self.alert_config[class_name]:  # send alert to each user
-                        print(self.send_twilio_sms(user["sms"], notif) if user["sms"] is not None else "")
+                    # Send Twilio SMS messages if enabled and it's available
+                    if self.enable_sms:
+                        for user in self.alert_config[class_name]:  # send alert to each user
+                            print(self.send_twilio_sms(user["sms"], notif) if user["sms"] is not None else "")
 
-                # Send GroupMe messages if enabled and it's available
-                if self.enable_groupme:
-                    for user in self.alert_config[class_name]:  # send alert to each user
-                        print(self.post_groupme_message(user["groupme"], notif) if user["groupme"] is not None else "")
+                    # Send GroupMe messages if enabled and it's available
+                    if self.enable_groupme:
+                        for user in self.alert_config[class_name]:  # send alert to each user
+                            print(self.post_groupme_message(user["groupme"], notif) if user["groupme"] is not None else "")
         return 0
 
     def post_groupme_message(self, group_id: str, msg: str):
